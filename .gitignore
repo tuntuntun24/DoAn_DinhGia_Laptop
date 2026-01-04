@@ -1,0 +1,14 @@
+# Bỏ qua thư mục môi trường ảo (nặng hàng trăm MB)
+.venv/
+venv/
+env/
+
+# Bỏ qua file rác của Python
+__pycache__/
+*.pyc
+
+# Bỏ qua file cấu hình riêng của PyCharm
+.idea/
+
+# Bỏ qua file dữ liệu quá lớn (nếu file csv > 100MB thì bỏ comment dòng dưới)
+# *.csv
