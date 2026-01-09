@@ -4,10 +4,14 @@ import pandas as pd
 # FILE A: TỔNG QUAN DỮ LIỆU
 # ==========================================
 
-# 1. Đọc dữ liệu
+# 1. Đọc dữ liệu (Đã cập nhật đường dẫn vào thư mục data/)
 print("--- 1. ĐANG ĐỌC DỮ LIỆU ---")
-df_train = pd.read_csv('laptops_train.csv')
-df_test = pd.read_csv('laptops_test.csv')
+try:
+    df_train = pd.read_csv('data/laptops_train.csv')
+    df_test = pd.read_csv('data/laptops_test.csv')
+except FileNotFoundError:
+    print("⚠️ LỖI: Không tìm thấy file. Hãy kiểm tra lại thư mục 'data/'")
+    exit()
 
 # 2. Gộp Train và Test
 df_train['Source'] = 'Train'
@@ -21,7 +25,6 @@ print(f"   - Số lượng tập Test:  {len(df_test)} dòng")
 print(f"   - TỔNG CỘNG:          {len(df)} dòng")
 
 print("\n--- 3. KIỂM TRA DỮ LIỆU THIẾU (NULL) ---")
-# Chỉ in ra những cột bị thiếu dữ liệu để dễ nhìn
 null_cols = df.isnull().sum()
 print(null_cols[null_cols > 0])
 

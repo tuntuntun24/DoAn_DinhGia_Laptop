@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 
 # ============================================
-# 1. CẤU HÌNH TRANG WEB (GIAO DIỆN CŨ)
+# 1. CẤU HÌNH & CSS (Tách riêng cho gọn)
 # ============================================
 st.set_page_config(
     page_title="Hệ Thống Định Giá & Chiến Lược Laptop",
@@ -12,66 +12,71 @@ st.set_page_config(
     layout="wide"
 )
 
-# CSS GIAO DIỆN GỐC (ĐÃ KHÔI PHỤC)
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 32px; 
-        font-weight: bold; 
-        color: #1565C0; 
-        text-align: center;
-        margin-bottom: 25px;
-        text-transform: uppercase;
-    }
-    .price-card {
-        background-color: #E3F2FD;
-        padding: 25px;
-        border-radius: 12px;
-        text-align: center;
-        border: 2px solid #2196F3;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .strategy-card {
-        background-color: #F1F8E9;
-        padding: 25px;
-        border-radius: 12px;
-        border: 2px solid #66BB6A;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .stButton>button {
-        width: 100%;
-        font-weight: bold;
-        height: 50px;
-        font-size: 18px;
-    }
-</style>
-""", unsafe_allow_html=True)
+
+def local_css():
+    st.markdown("""
+    <style>
+        .main-header {
+            font-size: 32px; 
+            font-weight: bold; 
+            color: #1565C0; 
+            text-align: center;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+        .price-card {
+            background-color: #E3F2FD;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #2196F3;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .strategy-card {
+            background-color: #F1F8E9;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #66BB6A;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stButton>button {
+            width: 100%;
+            font-weight: bold;
+            height: 50px;
+            font-size: 18px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+local_css()
 
 
 # ============================================
-# 2. TẢI MÔ HÌNH
+# 2. TẢI MÔ HÌNH (Đã cập nhật đường dẫn models/)
 # ============================================
 @st.cache_resource
 def load_data():
     try:
-        with open('laptop_price_model.pkl', 'rb') as f:
+        # Đọc file từ thư mục 'models/'
+        with open('models/laptop_price_model.pkl', 'rb') as f:
             model = pickle.load(f)
-        with open('model_columns.pkl', 'rb') as f:
+        with open('models/model_columns.pkl', 'rb') as f:
             cols = pickle.load(f)
         return model, cols
-    except:
-        st.error("⚠️ LỖI: Không tìm thấy file mô hình. Hãy chạy file 'c_huan_luyen_mo_hinh.py' trước!")
+    except FileNotFoundError:
+        st.error("⚠️ LỖI: Không tìm thấy file mô hình. Hãy chạy file '3_train_model.py' trước!")
         return None, None
 
 
 model, model_columns = load_data()
 
-# --- KHỞI TẠO SESSION STATE (ĐỂ SỬA LỖI LOAD LẠI) ---
+# Khởi tạo session state
 if 'price' not in st.session_state:
     st.session_state['price'] = None
 
 # ============================================
-# 3. GIAO DIỆN NHẬP LIỆU (SIDEBAR TRÁI)
+# 3. GIAO DIỆN NHẬP LIỆU (SIDEBAR)
 # ============================================
 with st.sidebar:
     st.header("⚙️ THÔNG SỐ KỸ THUẬT")
@@ -81,6 +86,7 @@ with st.sidebar:
     brand = st.selectbox("Thương hiệu",
                          ['Dell', 'Lenovo', 'HP', 'Asus', 'Acer', 'Apple', 'MSI', 'Toshiba', 'Samsung', 'Razer',
                           'Mediacom', 'Microsoft', 'Xiaomi', 'Vero', 'Chuwi', 'Google', 'Fujitsu', 'LG', 'Huawei'])
+
     category = st.selectbox("Loại máy",
                             ['Notebook', 'Ultrabook', 'Gaming', '2 in 1 Convertible', 'Workstation', 'Netbook'])
 
@@ -112,25 +118,24 @@ with st.sidebar:
     btn_predict = st.button("🚀 ĐỊNH GIÁ & PHÂN TÍCH", type="primary")
 
 # ============================================
-# 4. XỬ LÝ DỰ ĐOÁN & HIỂN THỊ
+# 4. XỬ LÝ DỰ ĐOÁN
 # ============================================
 st.markdown('<div class="main-header">HỆ THỐNG GỢI Ý CHIẾN LƯỢC GIÁ (AI POWERED)</div>', unsafe_allow_html=True)
 
-# KHI BẤM NÚT -> TÍNH TOÁN VÀ LƯU VÀO SESSION STATE
 if btn_predict and model:
-    # 1. Tính PPI
+    # 1. Tính toán PPI (Logic giống hệt Utils nhưng áp dụng cho đơn giá trị)
     try:
         X_res = int(resolution.split('x')[0])
         Y_res = int(resolution.split('x')[1])
         ppi = ((X_res ** 2) + (Y_res ** 2)) ** 0.5 / screen_size
     except:
-        ppi = 100
+        ppi = 100  # Giá trị mặc định nếu lỗi
 
-    # 2. Tạo input
+    # 2. Tạo DataFrame chứa dữ liệu đầu vào (Toàn số 0 ban đầu)
     input_data = pd.DataFrame(index=[0], columns=model_columns)
     input_data = input_data.fillna(0)
 
-    # 3. Điền giá trị
+    # 3. Điền các giá trị số (Numerical)
     input_data['RAM'] = ram
     input_data['Weight'] = weight
     input_data['PPI'] = ppi
@@ -141,7 +146,8 @@ if btn_predict and model:
     input_data['IPS'] = 1 if ips == "Có" else 0
 
 
-    # 4. One-Hot Encoding
+    # 4. Điền các giá trị phân loại (Categorical - One Hot Encoding)
+    # Hàm này tìm cột đúng tên (ví dụ: 'Manufacturer_Dell') và đánh dấu là 1
     def set_one_hot(col_prefix, value):
         col_name = f"{col_prefix}_{value}"
         if col_name in input_data.columns:
@@ -154,20 +160,23 @@ if btn_predict and model:
     set_one_hot('GPU_Brand', gpu_brand)
     set_one_hot('OS', os)
 
-    # 5. Dự đoán & LƯU VÀO SESSION
-    predicted_log = model.predict(input_data)
-    predicted_price = np.exp(predicted_log)[0]
+    # 5. Dự đoán
+    try:
+        predicted_log = model.predict(input_data)
+        predicted_price = np.exp(predicted_log)[0]  # Exp ngược lại vì lúc train đã log
+        st.session_state['price'] = predicted_price
+    except Exception as e:
+        st.error(f"Lỗi khi dự đoán: {e}")
 
-    st.session_state['price'] = predicted_price
-
-# --- HIỂN THỊ KẾT QUẢ (DÙNG LAYOUT CŨ) ---
+# ============================================
+# 5. HIỂN THỊ KẾT QUẢ
+# ============================================
 if st.session_state['price'] is not None:
     price = st.session_state['price']
 
     col1, col2 = st.columns([1, 1.5])
 
     with col1:
-        # Giao diện Price Card cũ
         st.markdown(f"""
         <div class="price-card">
             <h3 style="margin-top:0; color: #1565C0;">🏷️ GIÁ KHUYẾN NGHỊ</h3>
@@ -177,11 +186,10 @@ if st.session_state['price'] is not None:
         """, unsafe_allow_html=True)
 
     with col2:
-        # Giao diện Strategy Card cũ
         st.markdown('<div class="strategy-card">', unsafe_allow_html=True)
-        st.subheader("📈 BÀI TOÁN LỢI NHUẬN (Profit Strategy)")
+        st.subheader("📈 BÀI TOÁN LỢI NHUẬN")
 
-        # Logic tính toán cũ
+        # Mặc định giá nhập bằng 75% giá bán
         default_cost = int(price * 0.75)
 
         c1, c2 = st.columns(2)
@@ -201,11 +209,11 @@ if st.session_state['price'] is not None:
         m3.metric("Tổng lãi ròng", f"{total_profit:,.0f} đ")
 
         if margin < 10:
-            st.warning("⚠️ Cảnh báo: Biên lợi nhuận mỏng (<10%). Cần tối ưu chi phí nhập!")
+            st.warning("⚠️ Biên lợi nhuận mỏng (<10%). Cần tối ưu chi phí nhập!")
         elif margin > 25:
-            st.success("✅ Tuyệt vời: Sản phẩm có biên lợi nhuận cao (>25%).")
+            st.success("✅ Sản phẩm có biên lợi nhuận cao (>25%). Rất tiềm năng!")
         else:
-            st.info("ℹ️ Ổn định: Biên lợi nhuận ở mức tiêu chuẩn (10-25%).")
+            st.info("ℹ️ Biên lợi nhuận ở mức tiêu chuẩn (10-25%).")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
