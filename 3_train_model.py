@@ -86,11 +86,11 @@ xgb_base = xgb.XGBRegressor(random_state=42)
 
 # Lưới tham số "hạng nặng" để đạt độ chính xác cao
 param_grid = {
-    'n_estimators': [1000, 1500],       # Số lượng cây lớn để học sâu
-    'learning_rate': [0.05],            # Tốc độ học chậm và chắc
-    'max_depth': [6, 7],                # Độ sâu vừa đủ để bắt pattern phức tạp
-    'subsample': [0.8],                 # Chỉ học 80% dữ liệu mỗi cây để tránh Overfitting
-    'colsample_bytree': [0.8]           # (Mới) Chỉ dùng 80% số cột đặc trưng mỗi cây
+    'n_estimators': [200, 400, 600],      # Tập trung vùng vừa phải
+    'learning_rate': [0.03, 0.05, 0.1],   # Tốc độ học phổ biến
+    'max_depth': [3, 4, 5],               # Độ sâu nông
+    'subsample': [0.7, 0.8],              # Lấy ngẫu nhiên 70-80% dữ liệu
+    'colsample_bytree': [0.7, 0.8]        # Lấy ngẫu nhiên 70-80% cột
 }
 
 grid_search = GridSearchCV(

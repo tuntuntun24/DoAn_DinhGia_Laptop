@@ -1,55 +1,97 @@
 # 💻 HỆ THỐNG ĐỊNH GIÁ & CHIẾN LƯỢC KINH DOANH LAPTOP (AI POWERED)
 
-Đồ án tốt nghiệp xây dựng mô hình Machine Learning dự đoán giá Laptop và ứng dụng Web App hỗ trợ ra quyết định kinh doanh.
+> **Đồ án Thực tập Tốt nghiệp - Đại học Công Nghiệp Hà Nội (HaUI)**
 
-## 📌 Giới thiệu
+## 📖 Giới thiệu (Overview)
 
-Dự án giải quyết bài toán khó khăn trong việc định giá laptop trên thị trường cũ/mới. Hệ thống sử dụng thuật toán **XGBoost** để học từ dữ liệu cấu hình phần cứng và đưa ra mức giá gợi ý với độ chính xác cao.
+Dự án này xây dựng một hệ thống **Machine Learning** khép kín, từ khâu thu thập, làm sạch dữ liệu đến việc huấn luyện mô hình AI để dự đoán giá Laptop. Đặc biệt, hệ thống tích hợp **Web App** hỗ trợ người kinh doanh tính toán biên lợi nhuận (Profit Margin) và đưa ra chiến lược nhập hàng thông minh.
 
-- **Độ chính xác (R2 Score):** ~86%
-- **Sai số trung bình (MAE):** ~1.5 triệu VNĐ
-- **Công nghệ:** Python, Scikit-learn, XGBoost, Streamlit.
+## 🚀 Tính năng nổi bật
+### 1. Phân tích dữ liệu & AI
+* **Data Pipeline tự động:** Quy trình làm sạch và chuẩn hóa dữ liệu thông qua `master_pipeline` (xử lý RAM, SSD/HDD, Độ phân giải màn hình...).
+* **Mô hình mạnh mẽ:** Sử dụng thuật toán **XGBoost Regressor** kết hợp kỹ thuật **GridSearchCV** để tối ưu hóa siêu tham số.
+* **Độ chính xác cao:**
+    * R² Score (Độ phù hợp): **~86%**
+    * MAE (Sai số tuyệt đối): **~1.5 triệu VNĐ**
 
-## 🚀 Hướng dẫn cài đặt & Chạy (Quick Start)
+### 2. Ứng dụng Web (Streamlit)
+* **Định giá theo cấu hình:** Nhập cấu hình (RAM, CPU, GPU, Màn hình...) và nhận giá thị trường gợi ý ngay lập tức.
+* **Bài toán kinh doanh (Business Intelligence):**
+    * Tính toán giá nhập hàng và lợi nhuận ròng trên từng máy.
+    * Dự báo doanh thu tổng dựa trên số lượng bán mục tiêu.
+    * **Cảnh báo rủi ro:** Hệ thống tự động cảnh báo nếu biên lợi nhuận quá mỏng (<10%) hoặc đánh giá tiềm năng nếu lợi nhuận cao (>25%).
 
-**Bước 1: Tải dự án về máy**
+## 🛠 Công nghệ sử dụng (Tech Stack)
+| Lĩnh vực | Công nghệ / Thư viện |
+| :--- | :--- |
+| **Ngôn ngữ** | Python 3.9+ |
+| **Xử lý dữ liệu** | Pandas, NumPy |
+| **Machine Learning** | Scikit-learn, XGBoost |
+| **Web Framework** | Streamlit |
+| **Visualization** | Matplotlib, Seaborn |
+| **Deploy** | Pickle (Serialization) |
 
-    git clone https://github.com/tuntuntun24/doan_dinhgia_laptop.git
-    cd doan_dinhgia_laptop
+## 📸 Demo Ứng dụng
+*(Bạn hãy thay thế đường dẫn ảnh dưới đây bằng ảnh chụp màn hình thực tế từ dự án của bạn)*
 
-**Bước 2: Cài đặt các thư viện cần thiết**
+### 1. Giao diện nhập thông số kỹ thuật
+![Input Interface](https://via.placeholder.com/800x400?text=Giao+dien+nhap+lieu+Streamlit)
 
-    pip install -r requirements.txt
-
-**Bước 3: Khởi động Ứng dụng Web**
-
-    streamlit run d_chay_ung_dung.py
-
-*(Sau khi chạy lệnh này, trình duyệt sẽ tự động mở trang web định giá)*
+### 2. Kết quả định giá & Phân tích lợi nhuận
+![Result Interface](https://via.placeholder.com/800x400?text=Ket+qua+dinh+gia+va+Loi+nhuan)
 
 ## 📂 Cấu trúc dự án
+Dự án được tổ chức theo quy trình Data Science chuẩn:
 
-Để thuận tiện cho việc theo dõi luồng xử lý dữ liệu, code được chia thành 4 phần chính:
+```text
+DoAn_DinhGia_Laptop/
+├── data/                      # Chứa dữ liệu thô và test
+│   ├── laptops_train.csv
+│   └── laptops_test.csv
+├── models/                    # Chứa mô hình đã huấn luyện
+│   ├── laptop_price_model.pkl # Model XGBoost đã train
+│   └── model_columns.pkl      # Danh sách cột đặc trưng
+├── reports/                   # Báo cáo, biểu đồ phân tích
+├── 1_data_analysis.py         # Phân tích khám phá dữ liệu (EDA)
+├── 2_visualization.py         # Trực quan hóa (Heatmap, Distribution)
+├── 3_train_model.py           # Huấn luyện, đánh giá & lưu Model
+├── app.py                     # Source code Web App (Main)
+├── utils.py                   # Các hàm tiện ích & Pipeline xử lý
+├── requirements.txt           # Danh sách thư viện phụ thuộc
+└── README.md                  # Tài liệu dự án
+```
 
-1. **`a_tong_quan_du_lieu.py`**
-   - Đọc và kiểm tra dữ liệu thô.
-   - Thống kê số lượng mẫu (Train/Test).
+## ⚙️ Hướng dẫn cài đặt & Chạy
+Yêu cầu hệ thống: Đã cài đặt **Python** và **Git**.
 
-2. **`b_phan_tich_bieu_do.py`**
-   - Làm sạch dữ liệu phục vụ trực quan hóa.
-   - Vẽ biểu đồ Phân bố giá và Biểu đồ nhiệt (Heatmap) để phân tích tương quan.
+**Bước 1: Clone dự án**
+```bash
+git clone https://github.com/tuntuntun24/doan_dinhgia_laptop.git
+cd doan_dinhgia_laptop
+```
 
-3. **`c_huan_luyen_mo_hinh.py`**
-   - Xử lý đặc trưng (Feature Engineering).
-   - Huấn luyện và so sánh 3 thuật toán: Linear Regression, Random Forest, XGBoost.
-   - Lưu model tốt nhất (`.pkl`).
+**Bước 2: Cài đặt thư viện**
+```bash
+pip install -r requirements.txt
+```
 
-4. **`d_chay_ung_dung.py`**
-   - Giao diện Web App (Streamlit).
-   - Tích hợp bài toán tính toán lợi nhuận và tư vấn chiến lược giá.
+**Bước 3: Huấn luyện mô hình (Tùy chọn)**
+*Nếu bạn muốn training lại mô hình từ đầu để cập nhật dữ liệu mới:*
+```bash
+python 3_train_model.py
+```
+
+**Bước 4: Khởi chạy ứng dụng**
+```bash
+streamlit run app.py
+```
+*Trình duyệt sẽ tự động mở tại địa chỉ: `http://localhost:8501`*
 
 ## 👨‍💻 Tác giả
+* **Sinh viên:** Chu Phú Thành
+* **Trường:** Đại học Công Nghiệp Hà Nội (HaUI)
+* **Học phần:** Đồ án tốt nghiệp
+* **Liên hệ:** cpttt2004@gmail.com
 
-- **Sinh viên:** Chu Phú Thành
-- **Lớp/Trường:** Đại học Công Nghiệp Hà Nội (HaUI)
-- **Đồ án môn:**  Thực tập tốt nghiệp
+---
+**Disclaimer:** Dự án phục vụ mục đích học tập và nghiên cứu. Dữ liệu giá có thể thay đổi tùy thuộc vào thời điểm thị trường.
