@@ -7,6 +7,9 @@ from sklearn.metrics import r2_score, mean_absolute_error
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
+import optuna
+from sklearn.model_selection import KFold
+from sklearn.metrics import r2_score
 
 # ==========================================
 # 1. CẤU HÌNH & IMPORT TIỆN ÍCH
@@ -77,68 +80,114 @@ rf.fit(X_train, y_train_log)
 evaluate_model(rf, "Random Forest", X_test, y_test_log)
 
 # ==========================================
-# 4. XGBOOST NÂNG CAO (HYPERPARAMETER TUNING)
+# 4. XGBOOST NÂNG CAO VỚI OPTUNA + EARLY STOPPING
 # ==========================================
-print("\n-> ⏳ Đang chạy Grid Search tối ưu hóa XGBoost (AI Model)...")
-print("   (Quá trình này có thể mất vài phút để tìm tham số tốt nhất)")
+print("\n-> ⏳ Đang khởi động Optuna để tìm tham số tối ưu (AI Mode)...")
 
-xgb_base = xgb.XGBRegressor(random_state=42)
 
-# Lưới tham số "hạng nặng" để đạt độ chính xác cao
-param_grid = {
-    'n_estimators': [200, 400, 600],      # Tập trung vùng vừa phải
-    'learning_rate': [0.03, 0.05, 0.1],   # Tốc độ học phổ biến
-    'max_depth': [3, 4, 5],               # Độ sâu nông
-    'subsample': [0.7, 0.8],              # Lấy ngẫu nhiên 70-80% dữ liệu
-    'colsample_bytree': [0.7, 0.8]        # Lấy ngẫu nhiên 70-80% cột
-}
+# --- A. ĐỊNH NGHĨA HÀM MỤC TIÊU (OBJECTIVE FUNCTION) ---
+def objective(trial):
+    params = {
+        'n_estimators': 1000,
+        # Cho phép học nhanh hơn một chút
+        'learning_rate': trial.suggest_float('learning_rate', 0.05, 0.2),
 
-grid_search = GridSearchCV(
-    estimator=xgb_base,
-    param_grid=param_grid,
-    cv=3, verbose=1, n_jobs=-1, scoring='r2'
+        # Cho phép cây sâu hơn một chút để bắt được các mẫu khó
+        'max_depth': trial.suggest_int('max_depth', 5, 10),
+
+        # Giữ nguyên để chống học vẹt
+        'subsample': trial.suggest_float('subsample', 0.7, 1.0),
+        'colsample_bytree': trial.suggest_float('colsample_bytree', 0.7, 1.0),
+
+        # GIẢM HÌNH PHẠT: Cho phép model linh hoạt hơn
+        # Trước đây cho tới 10.0, giờ chỉ cho tối đa 2.0 hoặc 3.0
+        'reg_alpha': trial.suggest_float('reg_alpha', 0.0, 2.0),
+        'reg_lambda': trial.suggest_float('reg_lambda', 0.0, 3.0),
+
+        'n_jobs': -1,
+        'random_state': 42,
+        'verbosity': 0
+    }
+
+    cv_scores = []
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+    for train_idx, val_idx in kf.split(X_train):
+        X_train_fold, X_val_fold = X_train.iloc[train_idx], X_train.iloc[val_idx]
+        y_train_fold, y_val_fold = y_train_log.iloc[train_idx], y_train_log.iloc[val_idx]
+
+        model = xgb.XGBRegressor(**params, early_stopping_rounds=100)  # Tăng kiên nhẫn lên 100
+
+        model.fit(
+            X_train_fold, y_train_fold,
+            eval_set=[(X_val_fold, y_val_fold)],
+            verbose=False
+        )
+
+        preds = model.predict(X_val_fold)
+        score = r2_score(y_val_fold, preds)
+        cv_scores.append(score)
+
+    return np.mean(cv_scores)
+
+# --- B. CHẠY TỐI ƯU HÓA ---
+study = optuna.create_study(direction='maximize')
+study.optimize(objective, n_trials=50)
+
+print(f"\n✅ Đã tìm thấy tham số tốt nhất:")
+print(f"   -> R2 trung bình (Cross-Validation): {study.best_value:.4f}")
+print(f"   -> Bộ tham số: {study.best_params}")
+
+# ==========================================
+# 5. HUẤN LUYỆN LẠI MODEL CUỐI CÙNG (FINAL TRAINING)
+# ==========================================
+print("\n-> 🚀 Đang huấn luyện lại model tốt nhất trên toàn bộ tập Train...")
+
+best_params = study.best_params
+best_params['n_estimators'] = 1000
+best_params['n_jobs'] = -1
+best_params['random_state'] = 42
+
+# === SỬA LỖI TẠI ĐÂY (Bước 2) ===
+# Đưa early_stopping_rounds vào constructor của model cuối cùng
+final_model = xgb.XGBRegressor(**best_params, early_stopping_rounds=100)
+
+# Xóa early_stopping_rounds khỏi hàm fit
+final_model.fit(
+    X_train, y_train_log,
+    eval_set=[(X_test, y_test_log)],
+    verbose=False
 )
 
-grid_search.fit(X_train, y_train_log)
-
-best_xgb = grid_search.best_estimator_
-print(f"✅ Tham số tối ưu: {grid_search.best_params_}")
-
-# Đánh giá Model tốt nhất
-r2_xgb = evaluate_model(best_xgb, "XGBoost (Tuned)", X_test, y_test_log)
+evaluate_model(final_model, "XGBoost (Optuna)", X_test, y_test_log)
 
 # ==========================================
-# 5. KIỂM TRA ĐỘ LỆCH (OVERFITTING CHECK)
+# 6. KIỂM TRA OVERFITTING & LƯU MODEL
 # ==========================================
 print("\n-> 🔍 Kiểm tra độ ổn định mô hình (Overfitting Check):")
-y_pred_train = np.exp(best_xgb.predict(X_train))
+y_pred_train = np.exp(final_model.predict(X_train))
 r2_train = r2_score(np.exp(y_train_log), y_pred_train)
 
-print(f"   + Độ chính xác trên tập TRAIN: {r2_train:.2%} (Lý thuyết)")
-print(f"   + Độ chính xác trên tập TEST:  {r2_xgb:.2%}  (Thực tế)")
+y_pred_test_final = np.exp(final_model.predict(X_test))
+r2_test_final = r2_score(np.exp(y_test_log), y_pred_test_final)
 
-if r2_train - r2_xgb > 0.15:
-    print("   ⚠️ CẢNH BÁO: Mô hình có dấu hiệu học vẹt (Overfitting).")
+print(f"   + Độ chính xác trên tập TRAIN: {r2_train:.2%}")
+print(f"   + Độ chính xác trên tập TEST:  {r2_test_final:.2%}")
+
+diff = r2_train - r2_test_final
+if diff > 0.15:
+    print(f"   ⚠️ CẢNH BÁO: Chênh lệch {diff:.2%} -> Vẫn còn dấu hiệu Overfitting nhẹ.")
 else:
-    print("   ✅ ĐÁNH GIÁ: Mô hình học tốt, độ ổn định cao.")
+    print(f"   ✅ TUYỆT VỜI: Chênh lệch {diff:.2%} -> Model học rất ổn định!")
 
-print("-" * 40)
-
-# ==========================================
-# 6. LƯU MODEL (SAVING)
-# ==========================================
 if not os.path.exists('models'):
     os.makedirs('models')
 
-print("💾 Đang lưu mô hình vào thư mục 'models/'...")
-
-# 1. Lưu Model AI (XGBoost)
+print("\n💾 Đang lưu mô hình vào thư mục 'models/'...")
 with open('models/laptop_price_model.pkl', 'wb') as f:
-    pickle.dump(best_xgb, f)
+    pickle.dump(final_model, f)
 
-# 2. Lưu danh sách cột (Rất quan trọng cho Web App)
 with open('models/model_columns.pkl', 'wb') as f:
     pickle.dump(X.columns.tolist(), f)
 
-print(f"✅ HOÀN TẤT! Đã lưu model với độ chính xác R2 = {r2_xgb:.2%}")
-print("   Sẵn sàng tích hợp vào Streamlit App.")
+print("✅ HOÀN TẤT TOÀN BỘ QUÁ TRÌNH!")
