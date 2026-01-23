@@ -1,57 +1,81 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from utils import master_pipeline  # Sử dụng lại logic chuẩn
 import os
+import matplotlib.ticker as ticker
+from utils import master_pipeline  # Sử dụng hàm xử lý chuẩn của dự án
 
-# Cấu hình giao diện chuẩn báo cáo
+# Cấu hình giao diện chung
 sns.set_style("whitegrid")
-plt.rcParams['figure.figsize'] = (22, 10)
 
-# ==========================================
-# CHẠY PHÂN TÍCH & VẼ BIỂU ĐỒ
-# ==========================================
-print("1. Đang xử lý dữ liệu...")
-try:
-    df_train = pd.read_csv('data/laptops_train.csv')
-    df_test = pd.read_csv('data/laptops_test.csv')
-except FileNotFoundError:
-    print("⚠️ LỖI: Không tìm thấy file trong thư mục 'data/'")
-    exit()
-
-df_raw = pd.concat([df_train, df_test], ignore_index=True)
-
-# DÙNG UTILS ĐỂ LÀM SẠCH (Code gọn hơn hẳn cũ)
-df = master_pipeline(df_raw)
-
-# Đổi đơn vị tiền tệ sang Triệu Đồng
-df['Price'] = df['Price'] / 1_000_000
-print("-> Đã chuyển đổi giá tiền sang đơn vị: Triệu VNĐ")
-
-print("2. Đang vẽ biểu đồ gộp (HD)...")
-fig, axes = plt.subplots(1, 2)
-
-# --- HÌNH 1 (TRÁI): PHÂN BỐ GIÁ ---
-sns.histplot(df['Price'], kde=True, color='#1f77b4', bins=30, ax=axes[0])
-axes[0].set_title('PHÂN BỐ GIÁ LAPTOP THỰC TẾ', fontsize=18, fontweight='bold', pad=20)
-axes[0].set_xlabel('Giá tiền (Triệu VNĐ)', fontsize=14)
-axes[0].set_ylabel('Số lượng máy', fontsize=14)
-
-# --- HÌNH 2 (PHẢI): HEATMAP TƯƠNG QUAN ---
-# Lưu ý: 'Screen Size' đã bị drop trong master_pipeline để tính PPI,
-# nên ta chỉ quan tâm tương quan giữa PPI và Giá (PPI quan trọng hơn Size)
-cols_to_corr = ['Price', 'RAM', 'Weight', 'PPI']
-sns.heatmap(df[cols_to_corr].corr(), annot=True, cmap='RdBu_r', fmt=".2f",
-            linewidths=1, linecolor='white', annot_kws={"size": 14}, ax=axes[1])
-axes[1].set_title('MỨC ĐỘ ẢNH HƯỞNG ĐẾN GIÁ (HEATMAP)', fontsize=18, fontweight='bold', pad=20)
-
-plt.tight_layout(pad=3.0, w_pad=5.0)
-
-# Lưu ảnh
+# Tạo thư mục lưu ảnh nếu chưa có
 if not os.path.exists('reports'):
     os.makedirs('reports')
 
-file_name = 'reports/distribution_heatmap.png'
-plt.savefig(file_name)
-print(f"✅ ĐÃ XONG! Ảnh mới đã được lưu: {file_name}")
-plt.show()
+# ==========================================
+# 1. ĐỌC VÀ XỬ LÝ DỮ LIỆU
+# ==========================================
+print("-> Đang tải và xử lý dữ liệu...")
+try:
+    df_train = pd.read_csv('data/laptops_train.csv')
+    df_test = pd.read_csv('data/laptops_test.csv')
+    df_raw = pd.concat([df_train, df_test], ignore_index=True)
+
+    # --- [QUAN TRỌNG] CHUYỂN ĐỔI TIỀN TỆ (VNĐ) ---
+    # Nhân tỷ giá 3.05 và hệ số thị trường 0.7
+    df_raw['Price'] = df_raw['Price'] * 3.05 * 0.7
+
+    # Chạy qua Pipeline để tạo các cột quan trọng như PPI, Weight (float)
+    df = master_pipeline(df_raw)
+
+except Exception as e:
+    print(f"❌ Lỗi: {e}")
+    exit()
+
+# ==========================================
+# 2. VẼ ẢNH 1: PHÂN BỐ GIÁ (HISTOGRAM)
+# ==========================================
+print("-> Đang vẽ biểu đồ 1: Phân bố giá...")
+plt.figure(figsize=(12, 6))
+
+# Vẽ Histogram
+sns.histplot(df['Price'], kde=True, color='#1f77b4', bins=30)
+plt.title('PHÂN BỐ GIÁ LAPTOP (THỊ TRƯỜNG VN)', fontsize=16, fontweight='bold')
+plt.xlabel('Giá niêm yết (VNĐ)', fontsize=12)
+plt.ylabel('Số lượng máy', fontsize=12)
+
+# Định dạng trục X thành tiền Việt (VD: 20,000,000)
+ax = plt.gca()
+ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.0f}'.format(x)))
+
+# Lưu ảnh 1
+file_path1 = 'reports/price_distribution.png'
+plt.savefig(file_path1, bbox_inches='tight')
+print(f"✅ Đã lưu ảnh 1: {file_path1}")
+plt.close()  # Đóng hình để giải phóng bộ nhớ
+
+# ==========================================
+# 3. VẼ ẢNH 2: MỨC ĐỘ ẢNH HƯỞNG (HEATMAP)
+# ==========================================
+print("-> Đang vẽ biểu đồ 2: Mức độ ảnh hưởng (Correlation)...")
+plt.figure(figsize=(10, 8))
+
+# Chọn các cột số quan trọng để xem tương quan
+cols_to_analyze = ['Price', 'RAM', 'Weight', 'PPI', 'CPU_Freq']
+
+# Tính ma trận tương quan
+corr_matrix = df[cols_to_analyze].corr()
+
+# Vẽ Heatmap
+sns.heatmap(corr_matrix, annot=True, cmap='RdBu_r', fmt=".2f",
+            linewidths=1, linecolor='white', annot_kws={"size": 12})
+
+plt.title('MỨC ĐỘ ẢNH HƯỞNG CÁC THÔNG SỐ ĐẾN GIÁ', fontsize=16, fontweight='bold')
+
+# Lưu ảnh 2
+file_path2 = 'reports/feature_correlation.png'
+plt.savefig(file_path2, bbox_inches='tight')
+print(f"✅ Đã lưu ảnh 2: {file_path2}")
+plt.close()
+
+print("🎉 HOÀN TẤT! Bạn hãy vào thư mục 'reports/' để lấy 2 ảnh mới nhé.")

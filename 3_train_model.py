@@ -32,6 +32,10 @@ df_train = pd.read_csv('data/laptops_train.csv')
 df_test = pd.read_csv('data/laptops_test.csv')
 df = pd.concat([df_train, df_test], ignore_index=True)
 
+# [CẬP NHẬT] Nhân 3.05 vì dữ liệu gốc đã là (INR * 100)
+print("-> 💱 Đang chuyển đổi tiền tệ (Data * 3.05 -> VNĐ)...")
+df['Price'] = df['Price'] * 3.05 * 0.7
+
 print("-> 🧹 Đang làm sạch dữ liệu (Data Cleaning via Pipeline)...")
 df_clean = master_pipeline(df)
 
