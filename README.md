@@ -42,6 +42,6 @@ Nhóm đã thử nghiệm 3 mô hình và áp dụng kỹ thuật **Fine-tuning*
 
 ---
 ## 👨‍💻 Tác giả
-* **Sinh viên:** [Điền Tên Bạn]
+* **Sinh viên:** Chu Phú Thành
 * **Trường:** Đại học Công nghiệp Hà Nội (HaUI)
-* **Đồ án:** Nghiên cứu Khoa học / Tốt nghiệp
+* **Đồ án:** Nghiên cứu Khoa học

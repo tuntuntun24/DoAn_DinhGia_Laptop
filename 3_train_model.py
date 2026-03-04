@@ -123,7 +123,7 @@ print("\n-> ⏳ Bắt đầu cấu hình XGBoost...")
 
 if ENABLE_OPTUNA:
     print("   ⚠️ CHẾ ĐỘ TỐI ƯU ĐANG BẬT (Mất nhiều thời gian)...")
-    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    optuna.logging.set_verbosity(optuna.logging.INFO)
 
 
     def objective(trial):
