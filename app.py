@@ -76,64 +76,89 @@ if 'price' not in st.session_state:
     st.session_state['price'] = None
 
 # ============================================
-# 3. GIAO DIỆN NHẬP LIỆU (SIDEBAR - BRAND FIRST)
+# 3. GIAO DIỆN NHẬP LIỆU (SIDEBAR - ĐÃ SẮP XẾP CHUẨN)
 # ============================================
 with st.sidebar:
     st.header("⚙️ CẤU HÌNH CHI TIẾT")
     st.markdown("---")
 
-    # --- NHÓM 1: THƯƠNG HIỆU & PHÂN KHÚC (IDENTIFICATION) ---
+    # --- NHÓM 1: THƯƠNG HIỆU & PHÂN KHÚC ---
     st.subheader("🏷️ Nhận diện")
     brand = st.selectbox("Thương hiệu",
-                         ['Dell', 'Lenovo', 'HP', 'Asus', 'Acer', 'Apple', 'MSI', 'Toshiba', 'Samsung', 'Razer',
-                          'Mediacom', 'Microsoft', 'Xiaomi', 'Vero', 'Chuwi', 'Google', 'Fujitsu', 'LG', 'Huawei'])
+                         ['Acer', 'Apple', 'Asus', 'Chuwi', 'Dell', 'Fujitsu', 'Google', 'HP', 'Huawei', 'LG', 'Lenovo',
+                          'MSI', 'Mediacom', 'Microsoft', 'Razer', 'Samsung', 'Toshiba', 'Vero', 'Xiaomi'])
 
-    category = st.selectbox("Dòng sản phẩm (Category)",
-                            ['Notebook', 'Ultrabook', 'Gaming', '2 in 1 Convertible', 'Workstation', 'Netbook'])
+    category = st.selectbox("Dòng sản phẩm",
+                            ['2 in 1 Convertible', 'Gaming', 'Netbook', 'Notebook', 'Ultrabook', 'Workstation'],
+                            index=3)  # Mặc định chọn Notebook
 
     st.markdown("---")
 
-    # --- NHÓM 2: HIỆU NĂNG CỐT LÕI (PERFORMANCE) ---
+    # --- NHÓM 2: SỨC MẠNH XỬ LÝ ---
     st.subheader("🚀 Sức mạnh xử lý")
     cpu_brand = st.selectbox("Dòng CPU",
-                             ['Intel Core i5', 'Intel Core i7', 'Intel Core i3', 'Other Intel Processor',
-                              'AMD Processor'])
+                             ['AMD Processor', 'Intel Core i3', 'Intel Core i5', 'Intel Core i7',
+                              'Other Intel Processor'], index=2)  # Mặc định i5
     cpu_freq = st.number_input("Tốc độ CPU (GHz)", min_value=0.5, max_value=5.0, value=2.5, step=0.1)
 
     col_perf1, col_perf2 = st.columns(2)
     with col_perf1:
-        ram = st.selectbox("RAM (GB)", [8, 4, 16, 2, 6, 12, 24, 32, 64])
+        # Đã sắp xếp từ bé đến lớn, index=3 tương ứng với mặc định 8GB
+        ram = st.selectbox("RAM (GB)", [2, 4, 6, 8, 12, 16, 24, 32, 64], index=3)
     with col_perf2:
-        gpu_brand = st.selectbox("Card đồ họa (GPU)", ['Intel', 'Nvidia', 'AMD', 'Other'])
+        gpu_brand = st.selectbox("Card đồ họa", ['AMD', 'Intel', 'Nvidia', 'Other'])
 
     st.markdown("---")
 
-    # --- NHÓM 3: TRẢI NGHIỆM HIỂN THỊ (DISPLAY) ---
+    # --- NHÓM 3: TRẢI NGHIỆM HIỂN THỊ ---
     st.subheader("🖥️ Màn hình")
-    resolution = st.selectbox("Độ phân giải",
-                              ['1920x1080', '1366x768', '2560x1440', '3840x2160', '2880x1800', '2560x1600',
-                               '2304x1440'])
 
-    col_scr1, col_scr2 = st.columns(2)
-    with col_scr1:
-        screen_size = st.number_input("Kích thước (Inch)", min_value=10.0, max_value=18.0, value=15.6, step=0.1)
-    with col_scr2:
-        ips = st.selectbox("Tấm nền IPS", ["Có", "Không"])
+    # Danh sách Preset cũng được sắp xếp theo kích thước từ bé đến lớn
+    screen_presets = {
+        "13.3\" Full HD (1920x1080)": (13.3, "1920x1080"),
+        "13.3\" Retina/QHD (2560x1600)": (13.3, "2560x1600"),
+        "14.0\" Full HD (1920x1080)": (14.0, "1920x1080"),
+        "15.6\" Full HD (1920x1080)": (15.6, "1920x1080"),
+        "15.6\" 4K Ultra HD (3840x2160)": (15.6, "3840x2160"),
+        "17.3\" Full HD (1920x1080)": (17.3, "1920x1080"),
+    }
 
-    touchscreen = st.radio("Hỗ trợ cảm ứng", ["Không", "Có"], horizontal=True)
+    selected_preset = st.selectbox("Chọn loại màn hình", list(screen_presets.keys()), index=3)
+    preset_size, preset_res = screen_presets[selected_preset]
+
+    if selected_preset == "Tùy chỉnh thông số...":
+        col_scr1, col_scr2 = st.columns(2)
+        with col_scr1:
+            screen_size = st.number_input("Kích thước (Inch)", min_value=10.0, max_value=18.0, value=15.6, step=0.1)
+        with col_scr2:
+            # Sắp xếp độ phân giải từ bé đến lớn
+            resolution = st.selectbox("Độ phân giải",
+                                      ['1366x768', '1920x1080', '2304x1440', '2560x1440', '2560x1600', '2880x1800',
+                                       '3840x2160'], index=1)
+    else:
+        screen_size = preset_size
+        resolution = preset_res
+        st.caption(f"Đang sử dụng: {screen_size} inch | {resolution}")
+
+    col_panel1, col_panel2 = st.columns(2)
+    with col_panel1:
+        ips = st.selectbox("Tấm nền IPS", ["Không", "Có"])
+    with col_panel2:
+        touchscreen = st.selectbox("Cảm ứng", ["Không", "Có"])
 
     st.markdown("---")
 
-    # --- NHÓM 4: LƯU TRỮ & DI ĐỘNG (STORAGE & PORTABILITY) ---
+    # --- NHÓM 4: LƯU TRỮ & DI ĐỘNG ---
     st.subheader("💾 Lưu trữ & Di động")
     col_st1, col_st2 = st.columns(2)
     with col_st1:
-        ssd = st.selectbox("SSD (GB)", [256, 512, 0, 128, 1000, 2000])
+        # Sắp xếp từ bé đến lớn, index=2 tương ứng mặc định 256GB
+        ssd = st.selectbox("SSD (GB)", [0, 128, 256, 512, 1000, 2000], index=2)
     with col_st2:
         hdd = st.selectbox("HDD (GB)", [0, 500, 1000, 2000])
 
     weight = st.number_input("Trọng lượng máy (kg)", min_value=0.5, max_value=5.0, value=1.5, step=0.1)
-    os = st.selectbox("Hệ điều hành", ['Windows', 'Mac', 'Others/No OS/Linux'])
+    os = st.selectbox("Hệ điều hành", ['Mac', 'Others/No OS/Linux', 'Windows'], index=2)  # Mặc định Windows
 
     st.write("")
     btn_predict = st.button("🚀 ĐỊNH GIÁ & PHÂN TÍCH", type="primary")
