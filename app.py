@@ -76,42 +76,63 @@ if 'price' not in st.session_state:
     st.session_state['price'] = None
 
 # ============================================
-# 3. GIAO DIỆN NHẬP LIỆU (SIDEBAR)
+# 3. GIAO DIỆN NHẬP LIỆU (SIDEBAR - BRAND FIRST)
 # ============================================
 with st.sidebar:
-    st.header("⚙️ THÔNG SỐ KỸ THUẬT")
+    st.header("⚙️ CẤU HÌNH CHI TIẾT")
     st.markdown("---")
 
-    # Nhập liệu
+    # --- NHÓM 1: THƯƠNG HIỆU & PHÂN KHÚC (IDENTIFICATION) ---
+    st.subheader("🏷️ Nhận diện")
     brand = st.selectbox("Thương hiệu",
                          ['Dell', 'Lenovo', 'HP', 'Asus', 'Acer', 'Apple', 'MSI', 'Toshiba', 'Samsung', 'Razer',
                           'Mediacom', 'Microsoft', 'Xiaomi', 'Vero', 'Chuwi', 'Google', 'Fujitsu', 'LG', 'Huawei'])
 
-    category = st.selectbox("Loại máy",
+    category = st.selectbox("Dòng sản phẩm (Category)",
                             ['Notebook', 'Ultrabook', 'Gaming', '2 in 1 Convertible', 'Workstation', 'Netbook'])
 
-    col_s1, col_s2 = st.columns(2)
-    with col_s1:
-        ram = st.selectbox("RAM (GB)", [2, 4, 6, 8, 12, 16, 24, 32, 64])
-        screen_size = st.number_input("Màn hình (Inch)", min_value=10.0, max_value=18.0, value=15.6, step=0.1)
-    with col_s2:
-        weight = st.number_input("Nặng (kg)", min_value=0.5, max_value=5.0, value=1.5, step=0.1)
-        touchscreen = st.selectbox("Cảm ứng", ["Không", "Có"])
-
-    ips = st.selectbox("Tấm nền IPS", ["Không", "Có"])
-    resolution = st.selectbox("Độ phân giải",
-                              ['1366x768', '1920x1080', '2560x1440', '3840x2160', '2880x1800', '2560x1600',
-                               '2304x1440'])
-
     st.markdown("---")
-    cpu_brand = st.selectbox("CPU", ['Intel Core i3', 'Intel Core i5', 'Intel Core i7', 'Other Intel Processor',
-                                     'AMD Processor'])
+
+    # --- NHÓM 2: HIỆU NĂNG CỐT LÕI (PERFORMANCE) ---
+    st.subheader("🚀 Sức mạnh xử lý")
+    cpu_brand = st.selectbox("Dòng CPU",
+                             ['Intel Core i5', 'Intel Core i7', 'Intel Core i3', 'Other Intel Processor',
+                              'AMD Processor'])
     cpu_freq = st.number_input("Tốc độ CPU (GHz)", min_value=0.5, max_value=5.0, value=2.5, step=0.1)
 
-    ssd = st.selectbox("SSD (GB)", [0, 128, 256, 512, 1000, 2000])
-    hdd = st.selectbox("HDD (GB)", [0, 500, 1000, 2000])
+    col_perf1, col_perf2 = st.columns(2)
+    with col_perf1:
+        ram = st.selectbox("RAM (GB)", [8, 4, 16, 2, 6, 12, 24, 32, 64])
+    with col_perf2:
+        gpu_brand = st.selectbox("Card đồ họa (GPU)", ['Intel', 'Nvidia', 'AMD', 'Other'])
 
-    gpu_brand = st.selectbox("Card đồ họa (GPU)", ['Intel', 'Nvidia', 'AMD', 'Other'])
+    st.markdown("---")
+
+    # --- NHÓM 3: TRẢI NGHIỆM HIỂN THỊ (DISPLAY) ---
+    st.subheader("🖥️ Màn hình")
+    resolution = st.selectbox("Độ phân giải",
+                              ['1920x1080', '1366x768', '2560x1440', '3840x2160', '2880x1800', '2560x1600',
+                               '2304x1440'])
+
+    col_scr1, col_scr2 = st.columns(2)
+    with col_scr1:
+        screen_size = st.number_input("Kích thước (Inch)", min_value=10.0, max_value=18.0, value=15.6, step=0.1)
+    with col_scr2:
+        ips = st.selectbox("Tấm nền IPS", ["Có", "Không"])
+
+    touchscreen = st.radio("Hỗ trợ cảm ứng", ["Không", "Có"], horizontal=True)
+
+    st.markdown("---")
+
+    # --- NHÓM 4: LƯU TRỮ & DI ĐỘNG (STORAGE & PORTABILITY) ---
+    st.subheader("💾 Lưu trữ & Di động")
+    col_st1, col_st2 = st.columns(2)
+    with col_st1:
+        ssd = st.selectbox("SSD (GB)", [256, 512, 0, 128, 1000, 2000])
+    with col_st2:
+        hdd = st.selectbox("HDD (GB)", [0, 500, 1000, 2000])
+
+    weight = st.number_input("Trọng lượng máy (kg)", min_value=0.5, max_value=5.0, value=1.5, step=0.1)
     os = st.selectbox("Hệ điều hành", ['Windows', 'Mac', 'Others/No OS/Linux'])
 
     st.write("")
@@ -186,7 +207,7 @@ if st.session_state['price'] is not None:
         """, unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="strategy-card">', unsafe_allow_html=True)
+        # st.markdown('<div class="strategy-card">', unsafe_allow_html=True)
         st.subheader("📈 BÀI TOÁN LỢI NHUẬN")
 
         # Mặc định giá nhập bằng 75% giá bán
