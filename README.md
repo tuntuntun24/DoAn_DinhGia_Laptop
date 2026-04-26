@@ -4,8 +4,21 @@
 ![Machine Learning](https://img.shields.io/badge/Model-XGBoost_Optimized-orange)
 ![App](https://img.shields.io/badge/Web_App-Streamlit-red)
 
+🚀 **[XEM DEMO TRỰC TUYẾN TẠI ĐÂY](https://cnttchuphuthanh2022606150-klexjvbat4wyeyfgsjshag.streamlit.app/)**
+
 ## 📖 Giới thiệu
 Hệ thống định giá Laptop tự động sử dụng Machine Learning. Đồ án tập trung giải quyết bài toán dữ liệu nhỏ (~1300 mẫu) bằng thuật toán **XGBoost** kết hợp tối ưu hóa **Bayesian (Optuna)** để đạt độ chính xác cao và chống Overfitting.
+
+## 📸 Ảnh chụp màn hình ứng dụng
+![Giao diện dự đoán giá Laptop](reports/demo_screenshot.png)
+*Giao diện hệ thống gợi ý chiến lược giá tích hợp AI.*
+
+## 🛠 Công nghệ sử dụng
+* **Ngôn ngữ:** Python
+* **Mô hình:** XGBoost (được tối ưu hóa bằng Optuna)
+* **Xử lý dữ liệu:** Pandas, Numpy
+* **Giao diện:** Streamlit (với CSS tùy chỉnh chuyên nghiệp)
+* **Triển khai:** Streamlit Community Cloud
 
 ## 📊 Dữ liệu & Phương pháp
 * **Dữ liệu:** 1300 dòng, bao gồm các đặc trưng: CPU, RAM, GPU, Màn hình, Trọng lượng...
@@ -44,4 +57,3 @@ Nhóm đã thử nghiệm 3 mô hình và áp dụng kỹ thuật **Fine-tuning*
 ## 👨‍💻 Tác giả
 * **Sinh viên:** Chu Phú Thành
 * **Trường:** Đại học Công nghiệp Hà Nội (HaUI)
-* **Đồ án:** Nghiên cứu Khoa học
