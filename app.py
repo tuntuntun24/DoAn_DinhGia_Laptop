@@ -197,6 +197,7 @@ if btn_predict and model:
 
     # 5. Dự đoán
     try:
+        input_data = input_data.astype(float)
         predicted_log = model.predict(input_data)
         predicted_price = np.exp(predicted_log)[0]  # Exp ngược lại vì lúc train đã log
         st.session_state['price'] = predicted_price
