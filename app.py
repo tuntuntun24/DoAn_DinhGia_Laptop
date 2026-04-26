@@ -113,7 +113,7 @@ with st.sidebar:
     # --- NHÓM 3: TRẢI NGHIỆM HIỂN THỊ ---
     st.subheader("🖥️ Màn hình")
 
-    # Danh sách Preset cũng được sắp xếp theo kích thước từ bé đến lớn
+    # Danh sách Preset sắp xếp theo kích thước từ bé đến lớn
     screen_presets = {
         "13.3\" Full HD (1920x1080)": (13.3, "1920x1080"),
         "13.3\" Retina/QHD (2560x1600)": (13.3, "2560x1600"),
@@ -126,25 +126,13 @@ with st.sidebar:
     selected_preset = st.selectbox("Chọn loại màn hình", list(screen_presets.keys()), index=3)
     preset_size, preset_res = screen_presets[selected_preset]
 
-    if selected_preset == "Tùy chỉnh thông số...":
-        col_scr1, col_scr2 = st.columns(2)
-        with col_scr1:
-            screen_size = st.number_input("Kích thước (Inch)", min_value=10.0, max_value=18.0, value=15.6, step=0.1)
-        with col_scr2:
-            # Sắp xếp độ phân giải từ bé đến lớn
-            resolution = st.selectbox("Độ phân giải",
-                                      ['1366x768', '1920x1080', '2304x1440', '2560x1440', '2560x1600', '2880x1800',
-                                       '3840x2160'], index=1)
-    else:
-        screen_size = preset_size
-        resolution = preset_res
-        st.caption(f"Đang sử dụng: {screen_size} inch | {resolution}")
-
+    # Sử dụng radio button cho IPS và Cảm ứng
+    # Cài đặt horizontal=True để hai lựa chọn nằm ngang nhau, tiết kiệm không gian sidebar
     col_panel1, col_panel2 = st.columns(2)
     with col_panel1:
-        ips = st.selectbox("Tấm nền IPS", ["Không", "Có"])
+        ips = st.radio("Tấm nền IPS", ["Không", "Có"], horizontal=True)
     with col_panel2:
-        touchscreen = st.selectbox("Cảm ứng", ["Không", "Có"])
+        touchscreen = st.radio("Cảm ứng", ["Không", "Có"], horizontal=True)
 
     st.markdown("---")
 
