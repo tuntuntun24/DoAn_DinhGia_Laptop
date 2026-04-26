@@ -158,6 +158,7 @@ st.markdown('<div class="main-header">HỆ THỐNG GỢI Ý CHIẾN LƯỢC GIÁ
 
 if btn_predict and model:
     # 1. Tính toán PPI (Logic giống hệt Utils nhưng áp dụng cho đơn giá trị)
+    screen_size, resolution = screen_presets[selected_preset]
     try:
         X_res = int(resolution.split('x')[0])
         Y_res = int(resolution.split('x')[1])
