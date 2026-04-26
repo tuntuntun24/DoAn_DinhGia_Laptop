@@ -57,21 +57,15 @@ local_css()
 # ============================================
 @st.cache_resource
 def load_data():
-    # Lấy đường dẫn của thư mục hiện tại chứa file app.py
-    base_path = os.path.dirname(__file__)
-
-    # Kết hợp với đường dẫn tới file model
-    model_path = os.path.join(base_path, 'models', 'laptop_price_model.pkl')
-    cols_path = os.path.join(base_path, 'models', 'model_columns.pkl')
-
     try:
-        with open(model_path, 'rb') as f:
+        # Đọc file từ thư mục 'models/'
+        with open('models/laptop_price_model.pkl', 'rb') as f:
             model = pickle.load(f)
-        with open(cols_path, 'rb') as f:
+        with open('models/model_columns.pkl', 'rb') as f:
             cols = pickle.load(f)
         return model, cols
     except FileNotFoundError:
-        st.error(f"⚠️ Không tìm thấy file tại: {model_path}")
+        st.error("⚠️ LỖI: Không tìm thấy file mô hình. Hãy chạy file '3_train_model.py' trước!")
         return None, None
 
 
